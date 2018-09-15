@@ -3,16 +3,44 @@ import { MAX_PARTICLES } from './commands/flowers';
 import { range } from 'lodash';
 
 export class ParticleManager {
-  freeParticleIndices = range(MAX_PARTICLES);
-  particleLife = Int16Array.from(range(MAX_PARTICLES).map(() => 0));
-  particleUsed = Int16Array.from(range(MAX_PARTICLES).map(() => 0));
-  particleLocation = Float32Array.from(range(MAX_PARTICLES*2).map(() => 0));
+  static properties = {
+    used: 0,
+    life: 1,
+    x: 2,
+    y: 3
+  };
+
+  static textureProps = {
+    width: MAX_PARTICLES,
+    height: 4,
+    channels: 1,
+    format: 'alpha',
+    type: 'float'
+  };
+
+  freeParticleIndices = range(MAX_PARTICLES).reverse();
+  usedParticleIndices = {};
+  state = Float32Array.from(range(MAX_PARTICLES*4).map(() => 0));
+  dirty = true;
+
+  constructor(regl) {
+    this.regl = regl;
+    this.texture = regl.texture(ParticleManager.textureProps);
+  }
+
+  getTexture() {
+    if (this.dirty) {
+      this._updateTexture();
+    }
+
+    return this.texture;
+  }
 
   addParticle() {
     if (this.freeParticleIndices.length > 0) {
       const newIndex = this.freeParticleIndices.pop();
       this.usedParticleIndices[newIndex] = true;
-      this.particleUsed[newIndex] = 1;
+      this._setProperty(newIndex, 'used', 1);
       return newIndex;
     }
 
@@ -20,33 +48,42 @@ export class ParticleManager {
   }
 
   removeParticle(index) {
-    this.particleUsed[index] = 0;
+    this._setProperty(newIndex, 'used', 0);
     this.freeParticleIndices.push(index);
+    delete this.usedParticleIndices[newIndex];
   }
 
   update(index, properties) {
-    if (properties.x !== undefined) {
-      this.particleLocations[index*2] = properties.x;
-    }
-
-    if (properties.y !== undefined) {
-      this.particleLocations[index*2 + 1] = properties.y;
-    }
-
-    if (properties.life !== undefined) {
-      this.particleLife[index] = properties.life
-    }
+    Object.keys(ParticleManager.properties).forEach((property) => {
+      if (properties[property] !== undefined) {
+        this._setProperty(index, property, properties[property]);
+      }
+    });
   }
 
   value(index, property) {
-    if (property == 'x') {
-      return this.particleLocation[index*2];
-    } else if (property == 'y') {
-      return this.particleLocation[index*2 + 1];
-    } else if (property == 'life') {
-      return this.particleLife[index];
-    }
+    return this._getProperty(index, property);
+  }
 
-    return null;
+  eachParticle(callback) {
+    range(MAX_PARTICLES).forEach((index) => {
+      if (this._getProperty(index, 'used') !== 0) {
+        callback(index);
+      }
+    });
+  }
+
+  _updateTexture() {
+    this.texture({ ...ParticleManager.textureProps, data: this.state });
+    this.dirty = false;
+  }
+
+  _setProperty(index, property, value) {
+    this.state[ParticleManager.properties[property] * MAX_PARTICLES + index] = value;
+    this.dirty = true;
+  }
+
+  _getProperty(index, property) {
+    return this.state[ParticleManager.properties[property] * MAX_PARTICLES + index];
   }
 }

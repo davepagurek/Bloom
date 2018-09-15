@@ -1,3 +1,5 @@
+import { flatMap, range } from 'lodash';
+
 export const MAX_PARTICLES = 500;
 
 export function generateFlowers(regl) {
@@ -5,21 +7,35 @@ export function generateFlowers(regl) {
     vert: `
       precision mediump float;
 
-      attribute int index;
-      attribute int corner;
+      attribute float index;
+      attribute vec2 offset;
 
-      uniform bool particleUsed[${MAX_PARTICLES}];
-      uniform vec2 particleLocation[${MAX_PARTICLES}];
-      uniform vec2 offset[4];
+      uniform sampler2D particleState;
+
+      varying float used;
+      //varying vec2 textureCoord;
+
+      const float USED = 0.0;
+      const float LIFE = 1.0;
+      const float X = 2.0;
+      const float Y = 3.0;
+
+      float getProperty(float index, float property) {
+        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/4.0)).a;
+      }
 
       void main() {
-        if (!particleUsed[index]) {
-          gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+        if (getProperty(index, USED) == 0.0) {
+          used = 0.0;
+          gl_Position = vec4(0.0, 0.0, 1.0, 1.0);
+          //textureCoord = vec2(0.0, 0.0);
           return;
         }
 
+        used = 1.0;
+        //textureCoord = offset[corner];
         gl_Position = vec4(
-          particleLocations[index] + offset[corner],
+          vec2(getProperty(index, X), getProperty(index, Y)) + (offset * 0.2 - 0.1),
           0.5,
           1.0
         );
@@ -29,11 +45,12 @@ export function generateFlowers(regl) {
     frag: `
       precision mediump float;
 
-      uniform bool particleUsed[${MAX_PARTICLES}];
+      varying float used;
 
       void main() {
-        if (!particleUsed[index]) {
+        if (used == 0.0) {
           discard;
+          gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
           return;
         }
 
@@ -43,23 +60,22 @@ export function generateFlowers(regl) {
 
     attributes: {
       index: range(MAX_PARTICLES * 6).map((i) => Math.floor(i/6)),
-      corner: flatMap(range(MAX_PARTICLES), () => [0, 1, 2, 2, 3, 0])
+      offset: flatMap(range(MAX_PARTICLES), () => [
+        [0, 0],
+        [0, 1],
+        [1, 1],
+        [1, 1],
+        [1, 0],
+        [0, 0]
+      ])
     },
 
     uniforms: {
-      particleUsed: regl.prop('particleUsed'),
-      particleLocation: regl.prop('particleLocation'),
-      offset: [
-        [-0.1, -0.1],
-        [-0.1, 0.1],
-        [0.1, 0.1],
-        [0.1, -0.1]
-      ]
+      particleState: regl.prop('particleState')
     },
 
-    elements: [
-      [0, 1, 2],
-      [2, 3, 0]
-    ]
+    primitive: 'triangles',
+
+    count: MAX_PARTICLES * 6
   });
 }

@@ -5,9 +5,9 @@ import REGL from 'regl';
 import { mat4, vec3, vec4 } from 'gl-matrix';
 import { range } from 'lodash';
 
-const regl = REGL();
+const regl = REGL({ extensions: ['OES_texture_float'] });
 const flowers = generateFlowers(regl);
-const particles = new ParticleManager();
+const particles = new ParticleManager(regl);
 
 range(3).forEach(() => {
   const index = particles.addParticle();
@@ -15,8 +15,15 @@ range(3).forEach(() => {
 });
 
 regl.frame(() => {
+  particles.eachParticle((index) => {
+    particles.update(index, {
+      x: particles.value(index, 'x') + 0.01,
+      y: particles.value(index, 'y') + 0.01,
+      life: particles.value(index, 'life') + 1
+    });
+  });
+
   flowers({
-    particleUsed: particles.particleUsed,
-    particleLocation: particles.particleLocation
+    particleState: particles.getTexture()
   });
 });

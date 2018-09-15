@@ -13,7 +13,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
     "gl-matrix": "^2.8.1",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "noisejs": "^2.1.0",
     "regl": "^1.3.7",
     "webpack": "^2.4.1"
