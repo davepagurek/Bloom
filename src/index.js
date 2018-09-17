@@ -1,4 +1,5 @@
 import { ParticleManager } from './particles';
+import { PoseManager } from './poses';
 import { generateFlowers } from './commands/flowers';
 
 import REGL from 'regl';
@@ -61,10 +62,17 @@ Promise.all(promises).then(([net, video]) => {
 
   const flowers = generateFlowers(regl, flower);
   const particles = new ParticleManager(regl);
+  const poseManager = new PoseManager(regl);
 
   range(20).forEach(() => {
     const index = particles.addParticle();
-    particles.update(index, { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1, life: 0 });
+    particles.update(index, {
+      pointA: 0,
+      pointB: 1,
+      person: 0,
+      mix: Math.random(),
+      life: 0
+    });
   });
 
   const imageScaleFactor = 0.25;
@@ -77,12 +85,15 @@ Promise.all(promises).then(([net, video]) => {
     net
       .estimateMultiplePoses(video, imageScaleFactor, flipHorizontal, outputStride, 5, 0.1, 30.0)
       .then(poses => {
-        poses.forEach(({ score, keypoints }) => {
-          if (score >= minPoseConfidence) {
-            console.log(keypoints)
-            // draw particles with keypoints
-          }
-        });
+        poseManager.update(poses);
+        //console.log(poses);
+        //poses.forEach(({ score, keypoints }) => {
+          //console.log(poses);
+          //if (score >= minPoseConfidence) {
+            ////console.log(keypoints)
+            //// draw particles with keypoints
+          //}
+        //});
       });
 
     tick = (tick + 1) % 5;
@@ -99,7 +110,8 @@ Promise.all(promises).then(([net, video]) => {
     });
 
     flowers({
-      particleState: particles.getTexture()
+      particleState: particles.getTexture(),
+      people: poseManager.getTexture()
     });
   });
 });

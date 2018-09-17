@@ -1,6 +1,7 @@
 import { flatMap, range } from 'lodash';
 
 export const MAX_PARTICLES = 500;
+export const MAX_PEOPLE = 3;
 
 export function generateFlowers(regl, flower) {
   return regl({
@@ -11,6 +12,7 @@ export function generateFlowers(regl, flower) {
       attribute vec2 offset;
 
       uniform sampler2D particleState;
+      uniform sampler2D people;
 
       varying float used;
       varying vec2 textureCoord;
@@ -18,11 +20,26 @@ export function generateFlowers(regl, flower) {
 
       const float USED = 0.0;
       const float LIFE = 1.0;
-      const float X = 2.0;
-      const float Y = 3.0;
+      const float POINT_A = 2.0;
+      const float POINT_B = 3.0;
+      const float MIX = 4.0;
+      const float PERSON = 5.0;
 
       float getProperty(float index, float property) {
-        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/4.0)).a;
+        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/6.0)).a;
+      }
+
+      vec2 getPosition() {
+        vec2 pointA = texture2D(people, vec2(
+          getProperty(index, POINT_A) / 17.0,
+          getProperty(index, PERSON) / float(${MAX_PEOPLE})
+        )).xy;
+        vec2 pointB = texture2D(people, vec2(
+          getProperty(index, POINT_B) / 17.0,
+          getProperty(index, PERSON) / float(${MAX_PEOPLE})
+        )).xy;
+
+        return mix(pointA, pointB, getProperty(index, MIX));
       }
 
       void main() {
@@ -38,7 +55,7 @@ export function generateFlowers(regl, flower) {
         textureCoord = offset;
         life = getProperty(index, LIFE);
         gl_Position = vec4(
-          vec2(getProperty(index, X), getProperty(index, Y)) + (offset * -0.2 + 0.1),
+          getPosition() + (offset * -0.2 + 0.1),
           0.5,
           1.0
         );
@@ -85,6 +102,7 @@ export function generateFlowers(regl, flower) {
 
     uniforms: {
       particleState: regl.prop('particleState'),
+      people: regl.prop('people'),
       flower: regl.texture(flower)
     },
 
