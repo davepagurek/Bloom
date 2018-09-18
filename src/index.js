@@ -1,6 +1,7 @@
 import { ParticleManager } from './particles';
 import { PoseManager } from './poses';
 import { generateFlowers } from './commands/flowers';
+import { generateShowVideo } from './commands/video';
 
 import REGL from 'regl';
 import * as posenet from "@tensorflow-models/posenet";
@@ -61,8 +62,11 @@ Promise.all(promises).then(([net, video]) => {
   // document.querySelector('body').appendChild(video)
 
   const flowers = generateFlowers(regl, flower);
+  const showVideo = generateShowVideo(regl);
   const particles = new ParticleManager(regl);
   const poseManager = new PoseManager(regl);
+
+  const videoTexture = regl.texture(video);
 
   range(20).forEach(() => {
     const index = particles.addParticle();
@@ -99,9 +103,13 @@ Promise.all(promises).then(([net, video]) => {
       }
     });
 
+    videoTexture(video);
+    showVideo({ video: videoTexture });
+    //console.log(video);
+
     flowers({
       particleState: particles.getTexture(),
-      people: poseManager.getTexture()
+      people: poseManager.getTexture(),
     });
   });
 });

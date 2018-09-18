@@ -103,7 +103,7 @@ export function generateFlowers(regl, flower) {
     uniforms: {
       particleState: regl.prop('particleState'),
       people: regl.prop('people'),
-      flower: regl.texture(flower)
+      flower: regl.texture(flower),
     },
 
     primitive: 'triangles',
