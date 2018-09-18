@@ -1,7 +1,9 @@
 import { ParticleManager } from './particles';
 import { PoseManager } from './poses';
+import { VineManager } from './vines';
 import { generateFlowers } from './commands/flowers';
 import { generateShowVideo } from './commands/video';
+import { generateVines } from './commands/vines';
 
 import REGL from 'regl';
 import * as posenet from "@tensorflow-models/posenet";
@@ -67,9 +69,11 @@ Promise.all(promises).then(([net, video]) => {
   // document.querySelector('body').appendChild(video)
 
   const flowers = generateFlowers(regl, flower);
+  const vines = generateVines(regl);
   const showVideo = generateShowVideo(regl);
   const particles = new ParticleManager(regl);
   const poseManager = new PoseManager(regl, 0.25);
+  const vineManager = new VineManager(regl);
 
   const videoTexture = regl.texture(video);
 
@@ -83,6 +87,17 @@ Promise.all(promises).then(([net, video]) => {
       life: 0
     });
   });
+
+  range(6).forEach((i) => {
+    const index = vineManager.addVine();
+    vineManager.update(index, {
+      pointA: i,
+      pointB: i+1,
+      person: 0,
+      life: 0
+    });
+  });
+  //console.log(vineManager.state);
 
   const imageScaleFactor = 0.25;
   const flipHorizontal = true;
@@ -107,9 +122,20 @@ Promise.all(promises).then(([net, video]) => {
       }
     });
 
+    vineManager.eachVine((index) => {
+      const life = vineManager.value(index, 'life');
+      if (life < 1) {
+        vineManager.update(index, {life: life + 0.01});
+      }
+    });
+
     videoTexture(video);
     showVideo({ video: videoTexture });
-    //console.log(video);
+
+    vines({
+      vineState: vineManager.getTexture(),
+      people: poseManager.getTexture(),
+    });
 
     flowers({
       particleState: particles.getTexture(),
