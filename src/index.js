@@ -16,6 +16,11 @@ const video = document.createElement('video');
 video.width = window.innerWidth;
 video.height = window.innerHeight;
 
+window.addEventListener('resize', () => {
+  video.width = window.innerWidth;
+  video.height = window.innerHeight;
+})
+
 const setupCamera = () => {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     throw new Error(
@@ -64,7 +69,7 @@ Promise.all(promises).then(([net, video]) => {
   const flowers = generateFlowers(regl, flower);
   const showVideo = generateShowVideo(regl);
   const particles = new ParticleManager(regl);
-  const poseManager = new PoseManager(regl);
+  const poseManager = new PoseManager(regl, 0.25);
 
   const videoTexture = regl.texture(video);
 
@@ -82,7 +87,6 @@ Promise.all(promises).then(([net, video]) => {
   const imageScaleFactor = 0.25;
   const flipHorizontal = true;
   const outputStride = 16;
-  const minPoseConfidence = 0.25;
 
   let tick = 0;
   regl.frame(() => {

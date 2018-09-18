@@ -6,7 +6,8 @@ const padArray = (array) => {
   while (array.length < MAX_PEOPLE * 17 * 3) {
     array.push(0);
   }
-  while (array.lenth >= MAX_PEOPLE * 17 * 3) {
+
+  while (array.length > MAX_PEOPLE * 17 * 3) {
     array.pop();
   }
 
@@ -22,20 +23,25 @@ export class PoseManager {
     type: 'float'
   };
 
-  constructor(regl) {
+  constructor(regl, minPoseConfidence) {
     this.regl = regl;
     this.texture = regl.texture(PoseManager.textureProps);
+    this.minPoseConfidence = minPoseConfidence;
   }
 
   update(data) {
     this.texture({
       ...PoseManager.textureProps,
       data: padArray(flatMap(data, (person) =>
-        flatMap(person.keypoints, (point) => [
-          point.position.x / window.innerWidth * 2 - 1,
-          (1 - point.position.y / window.innerHeight) * 2 - 1,
-          0
-        ])))
+        person.score >= this.minPoseConfidence ?
+          flatMap(person.keypoints, (point) => [
+            point.position.x / window.innerWidth * 2 - 1,
+            (1 - point.position.y / window.innerHeight) * 2 - 1,
+            0
+          ])
+          :
+          []
+        ))
     });
   }
 
