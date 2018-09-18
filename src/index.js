@@ -84,17 +84,7 @@ Promise.all(promises).then(([net, video]) => {
   regl.frame(() => {
     net
       .estimateMultiplePoses(video, imageScaleFactor, flipHorizontal, outputStride, 5, 0.1, 30.0)
-      .then(poses => {
-        poseManager.update(poses);
-        //console.log(poses);
-        //poses.forEach(({ score, keypoints }) => {
-          //console.log(poses);
-          //if (score >= minPoseConfidence) {
-            ////console.log(keypoints)
-            //// draw particles with keypoints
-          //}
-        //});
-      });
+      .then(poses => poseManager.update(poses));
 
     tick = (tick + 1) % 5;
 

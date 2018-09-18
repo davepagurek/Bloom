@@ -31,7 +31,11 @@ export class PoseManager {
     this.texture({
       ...PoseManager.textureProps,
       data: padArray(flatMap(data, (person) =>
-        flatMap(person.keypoints, (point) => [point.position.x/window.innerWidth, point.position.y/window.innerHeight, 0])))
+        flatMap(person.keypoints, (point) => [
+          point.position.x / window.innerWidth * 2 - 1,
+          point.position.y / window.innerHeight * 2 - 1,
+          0
+        ])))
     });
   }
 
