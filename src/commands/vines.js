@@ -12,6 +12,7 @@ export function generateVines(regl) {
 
       attribute float index;
       attribute float segment;
+      attribute float side;
 
       uniform sampler2D vineState;
       uniform sampler2D people;
@@ -28,7 +29,7 @@ export function generateVines(regl) {
         return texture2D(vineState, vec2(index/float(${MAX_VINES}), property/6.0)).a;
       }
 
-      vec2 getPosition() {
+      vec2 getPosition(float mixAmount) {
         vec2 pointA = texture2D(people, vec2(
           getProperty(index, POINT_A) / 17.0,
           getProperty(index, PERSON) / float(${MAX_PEOPLE})
@@ -38,7 +39,7 @@ export function generateVines(regl) {
           getProperty(index, PERSON) / float(${MAX_PEOPLE})
         )).xy;
 
-        return mix(pointA, pointB, segment);
+        return mix(pointA, pointB, mixAmount);
       }
 
       void main() {
@@ -49,8 +50,19 @@ export function generateVines(regl) {
         }
 
         used = 1.0;
+
+        vec2 position = getPosition(segment);
+        vec2 otherPosition;
+        if (segment < 1.0) {
+          otherPosition = getPosition(min(1.0, segment + 0.01));
+        } else {
+          otherPosition = getPosition(max(0.0, segment - 0.01));
+        }
+        vec2 slope = normalize(position - otherPosition);
+        vec2 normal = vec2(slope.y, -slope.x);
+
         gl_Position = vec4(
-          getPosition(),
+          position + side * 0.01 * normal,
           0.6,
           1.0
         );
@@ -75,15 +87,22 @@ export function generateVines(regl) {
     `,
 
     attributes: {
-      index: range(MAX_VINES * SEGMENTS_PER_VINE).map((i) =>
-        Math.floor(i/SEGMENTS_PER_VINE)),
-      segment: range(MAX_VINES * SEGMENTS_PER_VINE).map((i) =>
-        (i % SEGMENTS_PER_VINE) / (SEGMENTS_PER_VINE - 1))
+      index: range(MAX_VINES * SEGMENTS_PER_VINE * 2).map((i) =>
+        Math.floor(i/(SEGMENTS_PER_VINE * 2))),
+      segment: range(MAX_VINES * SEGMENTS_PER_VINE * 2).map((i) =>
+        (Math.floor(i/2) % SEGMENTS_PER_VINE) / (SEGMENTS_PER_VINE - 1)),
+      side: range(MAX_VINES * SEGMENTS_PER_VINE * 2).map((i) => (i % 2 === 0 ? -1 : 1))
     },
 
     elements: flatMap(range(MAX_VINES), (vine) =>
-        flatMap(range(SEGMENTS_PER_VINE - 1), (i) =>
-          [vine * SEGMENTS_PER_VINE + i, vine * SEGMENTS_PER_VINE + i + 1])),
+        flatMap(range(SEGMENTS_PER_VINE - 1), (i) => [
+            vine * SEGMENTS_PER_VINE + i,
+            vine * SEGMENTS_PER_VINE + i + 1,
+            vine * SEGMENTS_PER_VINE + i + 2,
+            vine * SEGMENTS_PER_VINE + i,
+            vine * SEGMENTS_PER_VINE + i + 2,
+            vine * SEGMENTS_PER_VINE + i + 3
+        ])),
 
     uniforms: {
       vineState: regl.prop('vineState'),
@@ -92,6 +111,6 @@ export function generateVines(regl) {
 
     lineWidth: 1,
 
-    primitive: 'lines',
+    primitive: 'triangles',
   });
 }
