@@ -23,10 +23,28 @@ export function generateVines(regl) {
       const float LIFE = 1.0;
       const float POINT_A = 2.0;
       const float POINT_B = 3.0;
+      const float SEED = 4.0;
       const float PERSON = 5.0;
 
       float getProperty(float index, float property) {
         return texture2D(vineState, vec2(index/float(${MAX_VINES}), property/6.0)).a;
+      }
+
+      float jitter(float mixAmount) {
+        float amount = 0.0;
+        float offset = getProperty(index, SEED);
+        float scale = 1.0;
+        for (int power = 0; power < 5; power++) {
+          amount += sin((offset + mixAmount) * scale) / scale;
+          scale *= 2.0;
+        }
+
+        amount *= 0.1;
+
+        // ramp down to 0 at 0 and 1
+        amount *= -4.0 * mixAmount * (mixAmount - 1.0);
+
+        return amount;
       }
 
       vec2 getPosition(float mixAmount) {
@@ -39,7 +57,10 @@ export function generateVines(regl) {
           getProperty(index, PERSON) / float(${MAX_PEOPLE})
         )).xy;
 
-        return mix(pointA, pointB, mixAmount);
+        vec2 direction = normalize(pointB - pointA);
+        vec2 normal = vec2(direction.y, -direction.x);
+
+        return mix(pointA, pointB, mixAmount) + jitter(mixAmount) * normal;
       }
 
       void main() {
@@ -95,7 +116,7 @@ export function generateVines(regl) {
     },
 
     elements: flatMap(range(MAX_VINES), (vine) =>
-        flatMap(range(SEGMENTS_PER_VINE - 1), (i) => [
+        flatMap(range(SEGMENTS_PER_VINE - 2), (i) => [
             vine * SEGMENTS_PER_VINE + i,
             vine * SEGMENTS_PER_VINE + i + 1,
             vine * SEGMENTS_PER_VINE + i + 2,

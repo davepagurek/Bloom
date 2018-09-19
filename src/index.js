@@ -88,11 +88,12 @@ Promise.all(promises).then(([net, video]) => {
     });
   });
 
-  range(6).forEach((i) => {
+  range(20).forEach((i) => {
     const index = vineManager.addVine();
     vineManager.update(index, {
       pointA: i,
       pointB: i+1,
+      seed: Math.random(),
       person: 0,
       life: 0
     });

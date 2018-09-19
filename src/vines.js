@@ -7,6 +7,7 @@ export class VineManager {
     life: 1,
     pointA: 2,
     pointB: 3,
+    seed: 4,
     person: 5,
   };
 
