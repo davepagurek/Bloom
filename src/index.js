@@ -116,7 +116,7 @@ Promise.all(promises).then(([net, video]) => {
   const videoTexture = regl.texture(video);
 
   const index = vineManager.addVine();
-  const start = Math.floor(Math.random() * 17);
+  const start = sample(range(11));
   vineManager.update(index, {
     pointA: start,
     pointB: sample(connections[start]),

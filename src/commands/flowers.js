@@ -14,6 +14,7 @@ export function generateFlowers(regl, flower) {
 
       uniform sampler2D particleState;
       uniform sampler2D people;
+      uniform float aspect;
 
       varying float used;
       varying vec2 textureCoord;
@@ -63,7 +64,7 @@ export function generateFlowers(regl, flower) {
         textureCoord = offset;
         life = getProperty(index, LIFE);
         gl_Position = vec4(
-          getPosition() + (offset * -0.2 + 0.1),
+          getPosition() + (offset *  vec2(1.0, aspect) * -0.16 + 0.08),
           0.5,
           1.0
         );
@@ -116,6 +117,7 @@ export function generateFlowers(regl, flower) {
         min: 'linear',
         max: 'linear'
       }),
+      aspect: (context) => context.viewportWidth/context.viewportHeight,
     },
 
     primitive: 'triangles',

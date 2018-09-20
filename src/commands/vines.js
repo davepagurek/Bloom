@@ -17,6 +17,7 @@ export function generateVines(regl) {
 
       uniform sampler2D vineState;
       uniform sampler2D people;
+      uniform float aspect;
 
       varying float used;
 
@@ -46,7 +47,7 @@ export function generateVines(regl) {
         vec2 direction = normalize(pointB - pointA);
         vec2 normal = vec2(direction.y, -direction.x);
 
-        return mix(pointA, pointB, mixAmount) + jitter(mixAmount) * normal;
+        return mix(pointA, pointB, mixAmount) + jitter(mixAmount) * normal * vec2(1.0, aspect);
       }
 
       void main() {
@@ -114,6 +115,7 @@ export function generateVines(regl) {
     uniforms: {
       vineState: regl.prop('vineState'),
       people: regl.prop('people'),
+      aspect: (context) => context.viewportWidth/context.viewportHeight,
     },
 
     lineWidth: 1,
