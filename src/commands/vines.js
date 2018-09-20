@@ -1,6 +1,7 @@
 import { flatMap, range } from 'lodash';
 
 import { MAX_PEOPLE } from './flowers';
+import { jitter } from './utils';
 
 export const MAX_VINES = 500;
 export const SEGMENTS_PER_VINE = 50;
@@ -30,22 +31,7 @@ export function generateVines(regl) {
         return texture2D(vineState, vec2(index/float(${MAX_VINES}), property/6.0)).a;
       }
 
-      float jitter(float mixAmount) {
-        float amount = 0.0;
-        float offset = getProperty(index, SEED);
-        float scale = 1.0;
-        for (int power = 0; power < 5; power++) {
-          amount += sin((offset + mixAmount) * scale) / scale;
-          scale *= 2.0;
-        }
-
-        amount *= 0.1;
-
-        // ramp down to 0 at 0 and 1
-        amount *= -4.0 * mixAmount * (mixAmount - 1.0);
-
-        return amount;
-      }
+      ${jitter}
 
       vec2 getPosition(float mixAmount) {
         vec2 pointA = texture2D(people, vec2(
@@ -116,13 +102,13 @@ export function generateVines(regl) {
     },
 
     elements: flatMap(range(MAX_VINES), (vine) =>
-        flatMap(range(SEGMENTS_PER_VINE - 2), (i) => [
-            vine * SEGMENTS_PER_VINE + i,
-            vine * SEGMENTS_PER_VINE + i + 1,
-            vine * SEGMENTS_PER_VINE + i + 2,
-            vine * SEGMENTS_PER_VINE + i,
-            vine * SEGMENTS_PER_VINE + i + 2,
-            vine * SEGMENTS_PER_VINE + i + 3
+        flatMap(range(SEGMENTS_PER_VINE - 1), (i) => [
+            vine * SEGMENTS_PER_VINE * 2 + (i * 2),
+            vine * SEGMENTS_PER_VINE * 2 + (i * 2) + 1,
+            vine * SEGMENTS_PER_VINE * 2 + (i * 2) + 3,
+            vine * SEGMENTS_PER_VINE * 2 + (i * 2),
+            vine * SEGMENTS_PER_VINE * 2 + (i * 2) + 3,
+            vine * SEGMENTS_PER_VINE * 2 + (i * 2) + 2
         ])),
 
     uniforms: {

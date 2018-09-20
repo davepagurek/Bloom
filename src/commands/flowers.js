@@ -1,4 +1,5 @@
 import { flatMap, range } from 'lodash';
+import { jitter } from './utils';
 
 export const MAX_PARTICLES = 500;
 export const MAX_PEOPLE = 3;
@@ -24,10 +25,13 @@ export function generateFlowers(regl, flower) {
       const float POINT_B = 3.0;
       const float MIX = 4.0;
       const float PERSON = 5.0;
+      const float SEED = 6.0;
 
       float getProperty(float index, float property) {
-        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/6.0)).a;
+        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/7.0)).a;
       }
+
+      ${jitter}
 
       vec2 getPosition() {
         vec2 pointA = texture2D(people, vec2(
@@ -39,7 +43,11 @@ export function generateFlowers(regl, flower) {
           getProperty(index, PERSON) / float(${MAX_PEOPLE})
         )).xy;
 
-        return mix(pointA, pointB, getProperty(index, MIX));
+        vec2 direction = normalize(pointB - pointA);
+        vec2 normal = vec2(direction.y, -direction.x);
+
+        float mixAmount = getProperty(index, MIX);
+        return mix(pointA, pointB, mixAmount) + jitter(mixAmount) * normal;
       }
 
       void main() {

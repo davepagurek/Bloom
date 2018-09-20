@@ -22,6 +22,7 @@ export class VineManager {
   state = Float32Array.from(range(MAX_VINES*6).map(() => 0));
   freeVineIndices = range(MAX_VINES).reverse();
   usedVineIndices = {};
+  vineSpawned = range(MAX_VINES).map(() => false);
   dirty = true;
 
 
@@ -35,6 +36,7 @@ export class VineManager {
       const newIndex = this.freeVineIndices.pop();
       this.usedVineIndices[newIndex] = true;
       this._setProperty(newIndex, 'used', 1);
+      this.vineSpawned[newIndex] = false;
       return newIndex;
     }
 
@@ -48,6 +50,10 @@ export class VineManager {
   }
 
   update(index, properties) {
+    if (properties.spawned !== undefined) {
+      this.vineSpawned[index] = properties.spawned;
+    }
+
     Object.keys(VineManager.properties).forEach((property) => {
       if (properties[property] !== undefined) {
         this._setProperty(index, property, properties[property]);
@@ -56,6 +62,9 @@ export class VineManager {
   }
 
   value(index, property) {
+    if (property === 'spawned') {
+      return this.vineSpawned[index];
+    }
     return this._getProperty(index, property);
   }
 
