@@ -111,7 +111,11 @@ export function generateFlowers(regl, flower) {
     uniforms: {
       particleState: regl.prop('particleState'),
       people: regl.prop('people'),
-      flower: regl.texture(flower),
+      flower: regl.texture({
+        data: flower,
+        min: 'linear',
+        max: 'linear'
+      }),
     },
 
     primitive: 'triangles',
