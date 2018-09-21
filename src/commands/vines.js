@@ -90,7 +90,7 @@ export function generateVines(regl) {
           return;
         }
 
-        gl_FragColor = vec4(0.1, 0.5, 0.1, 1.0);
+        gl_FragColor = vec4(vec3(0.34, 0.62, 0.52) * 0.7, 1.0);
       }
     `,
 

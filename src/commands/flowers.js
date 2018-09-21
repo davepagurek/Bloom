@@ -27,9 +27,10 @@ export function generateFlowers(regl, flower) {
       const float MIX = 4.0;
       const float PERSON = 5.0;
       const float SEED = 6.0;
+      const float SCALE = 7.0;
 
       float getProperty(float index, float property) {
-        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/7.0)).a;
+        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/8.0)).a;
       }
 
       ${jitter}
@@ -64,7 +65,7 @@ export function generateFlowers(regl, flower) {
         textureCoord = offset;
         life = getProperty(index, LIFE);
         gl_Position = vec4(
-          getPosition() + (offset *  vec2(1.0, aspect) * -0.16 + 0.08),
+          getPosition() + (offset *  vec2(1.0, aspect) * -0.16 + 0.08) * getProperty(index, SCALE),
           0.5,
           1.0
         );
