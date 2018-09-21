@@ -159,16 +159,15 @@ Promise.all(promises).then(([net, video]) => {
         });
       }));
 
-    tick = (tick + 1) % 5;
-
+    tick += 1;
     particles.eachParticle((index) => {
-      if (tick !== 0) return;
-
-      const life = particles.value(index, 'life');
-      if (life < 12) {
-        particles.update(index, {
-          life: life + 1
-        });
+      if (tick % (index % 5 + 5) === 0) {
+        const life = particles.value(index, 'life');
+        if (life < 12) {
+          particles.update(index, {
+            life: life + 1
+          });
+        }
       }
     });
 
@@ -206,7 +205,7 @@ Promise.all(promises).then(([net, video]) => {
 
           let numVinesToSpawn = 0;
           if (vinesPerPerson[person] < 12) {
-            numVinesToSpawn = sample(range(3)) + 1;
+            numVinesToSpawn = Math.random() * 3 + 1;
           } else {
             numVinesToSpawn = Math.floor(3 * Math.random() * (1 - vinesPerPerson[person] / MAX_VINES))
           }
@@ -234,7 +233,7 @@ Promise.all(promises).then(([net, video]) => {
     });
 
     videoTexture(video);
-    showVideo({ video: videoTexture });
+    // showVideo({ video: videoTexture });
 
     vines({
       vineState: vineManager.getTexture(),
