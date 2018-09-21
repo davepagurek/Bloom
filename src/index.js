@@ -103,8 +103,8 @@ Promise.all(promises).then(([net, video]) => {
     [RIGHT_WRIST]: [RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_HIP, RIGHT_KNEE],
     [LEFT_HIP]: [LEFT_WRIST, LEFT_SHOULDER, RIGHT_SHOULDER, RIGHT_HIP, LEFT_KNEE, RIGHT_KNEE],
     [RIGHT_HIP]: [RIGHT_WRIST, RIGHT_SHOULDER, LEFT_SHOULDER, LEFT_HIP, RIGHT_KNEE, LEFT_KNEE],
-    [LEFT_KNEE]: [RIGHT_SHOULDER, RIGHT_HIP, LEFT_HIP, RIGHT_KNEE, LEFT_ANKLE, RIGHT_ANKLE],
-    [RIGHT_KNEE]: [LEFT_SHOULDER, LEFT_HIP, RIGHT_HIP, LEFT_KNEE, RIGHT_ANKLE, LEFT_ANKLE],
+    [LEFT_KNEE]: [RIGHT_SHOULDER, RIGHT_HIP, LEFT_HIP, RIGHT_KNEE],
+    [RIGHT_KNEE]: [LEFT_SHOULDER, LEFT_HIP, RIGHT_HIP, LEFT_KNEE],
     [LEFT_ANKLE]: [RIGHT_SHOULDER, RIGHT_HIP, LEFT_KNEE, RIGHT_KNEE, RIGHT_ANKLE],
     [RIGHT_ANKLE]: [LEFT_SHOULDER, LEFT_HIP, RIGHT_KNEE, LEFT_KNEE, LEFT_ANKLE],
   };
@@ -234,24 +234,19 @@ Promise.all(promises).then(([net, video]) => {
       }
     });
 
-    videoTexture(video);
-    // showVideo({ video: videoTexture });
+    //videoTexture(video);
+    //showVideo({ video: videoTexture });
 
     vines({
       vineState: vineManager.getTexture(),
       people: poseManager.getTexture(),
     });
 
-    const t = new Date().getTime() - startTime;
-    const windOffset = [
-      Math.pow(Math.sin(t / 10000), 10) * (0.25*Math.sin(t / 400) + 0.05*Math.sin(t / 30)),
-      Math.pow(Math.sin(t / 9998), 10) * (0.25*Math.sin(t / 403) + 0.05*Math.sin(t / 37)),
-    ];
-
+    const time = new Date().getTime() - startTime;
     flowers({
       particleState: particles.getTexture(),
       people: poseManager.getTexture(),
-      windOffset,
+      time,
     });
   });
 });

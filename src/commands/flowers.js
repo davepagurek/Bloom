@@ -15,7 +15,7 @@ export function generateFlowers(regl, flower) {
       uniform sampler2D particleState;
       uniform sampler2D people;
       uniform float aspect;
-      uniform vec2 windOffset;
+      uniform float time;
 
       varying float used;
       varying vec2 textureCoord;
@@ -54,6 +54,13 @@ export function generateFlowers(regl, flower) {
         return mix(pointA, pointB, mixAmount) + jitter(mixAmount) * normal;
       }
 
+      vec2 getWindOffset(float t) {
+        return vec2(
+          pow(sin(t / 10000.0), 20.0) * (0.25*sin(t / 400.0) + 0.05*sin(t / 30.0)),
+          pow(sin(t / 9998.0), 20.0) * (0.25*sin(t / 403.0) + 0.05*sin(t / 37.0))
+        );
+      }
+
       void main() {
         if (getProperty(index, USED) == 0.0) {
           used = 0.0;
@@ -66,6 +73,9 @@ export function generateFlowers(regl, flower) {
         used = 1.0;
         textureCoord = offset;
         life = getProperty(index, LIFE);
+        float scale = getProperty(index, SCALE);
+
+        vec2 windOffset = getWindOffset(time + 1000.0 * scale);
 
         float angle = getProperty(index, ROTATION) + windOffset.x * 3.14;
         mat2 rotation = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
@@ -75,7 +85,7 @@ export function generateFlowers(regl, flower) {
           getPosition() +
 
             // Offset within the image
-            (offset * -0.16 + 0.08) * rotation * vec2(1.0, aspect) * getProperty(index, SCALE) +
+            (offset * -0.16 + 0.08) * rotation * vec2(1.0, aspect) * scale +
 
             // Offset from wind
             windOffset * vec2(1.0, aspect) * 0.1,
@@ -133,7 +143,7 @@ export function generateFlowers(regl, flower) {
         max: 'linear'
       }),
       aspect: (context) => context.viewportWidth/context.viewportHeight,
-      windOffset: regl.prop('windOffset'),
+      time: regl.prop('time'),
     },
 
     primitive: 'triangles',
