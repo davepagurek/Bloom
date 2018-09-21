@@ -22,7 +22,7 @@ import {
 import { VineManager } from './vines';
 import { generateFlowers } from './commands/flowers';
 import { generateShowVideo } from './commands/video';
-import { generateVines } from './commands/vines';
+import { generateVines, MAX_VINES } from './commands/vines';
 
 import REGL from 'regl';
 import * as posenet from "@tensorflow-models/posenet";
@@ -82,6 +82,8 @@ const videoPromise = new Promise((resolve, reject) => {
   }
 })
 
+const vinesPerPerson = {}
+
 const promises = [posenet.load(0.75), videoPromise, flowerPromise];
 Promise.all(promises).then(([net, video]) => {
   // for debugging:
@@ -126,6 +128,8 @@ Promise.all(promises).then(([net, video]) => {
       .estimateMultiplePoses(video, imageScaleFactor, flipHorizontal, outputStride, 5, 0.1, 30.0)
       .then(poses => poseManager.update(poses, (newPeople, removedPeople) => {
         removedPeople.forEach((i) => {
+          delete vinesPerPerson[i]
+
           vineManager.eachVine((vine) => {
             if (vineManager.value(vine, 'person') === i) {
               vineManager.removeVine(vine);
@@ -143,7 +147,8 @@ Promise.all(promises).then(([net, video]) => {
         newPeople.forEach((i) => {
           const index = vineManager.addVine();
           if (index === null) return;
-          const start = sample(range(11));
+          // start anywhere from the head to the shoulders
+          const start = sample(range(RIGHT_SHOULDER + 1));
           vineManager.update(index, {
             pointA: start,
             pointB: sample(connections[start]),
@@ -169,6 +174,7 @@ Promise.all(promises).then(([net, video]) => {
 
     vineManager.eachVine((index) => {
       const life = vineManager.value(index, 'life');
+      const person = vineManager.value(index, 'person');
 
       // If there is still room to grow
       if (life < 1) {
@@ -195,10 +201,20 @@ Promise.all(promises).then(([net, video]) => {
         if (!vineManager.value(index, 'spawned')) {
           const spawnFrom = vineManager.value(index, 'pointB');
 
+          vinesPerPerson[person] = vinesPerPerson[person] || 0;
+
+          let numVinesToSpawn = 0;
+          if (vinesPerPerson[person] < 12) {
+            numVinesToSpawn = sample(range(3)) + 1;
+          } else {
+            numVinesToSpawn = Math.floor(3 * Math.random() * (1 - vinesPerPerson[person] / MAX_VINES))
+          }
+
           // Maybe add more vines
-          range(sample([0, 1, 2])).forEach(() => {
+          range(numVinesToSpawn).forEach(() => {
             const newIndex = vineManager.addVine();
             if (newIndex !== null) {
+              vinesPerPerson[person] += 1;
               vineManager.update(newIndex, {
                 // Start from the current vine's endpoint, going to somewhere new
                 pointA: spawnFrom,
