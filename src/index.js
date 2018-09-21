@@ -123,6 +123,7 @@ Promise.all(promises).then(([net, video]) => {
   const outputStride = 16;
 
   let tick = 0;
+  let startTime = new Date().getTime();
   regl.frame(() => {
     net
       .estimateMultiplePoses(video, imageScaleFactor, flipHorizontal, outputStride, 5, 0.1, 30.0)
@@ -193,6 +194,7 @@ Promise.all(promises).then(([net, video]) => {
               life: 0,
               seed: vineManager.value(index, 'seed'),
               scale: Math.random() * 1.2 + 0.5,
+              rotation: Math.random() * 2 * Math.PI,
             });
           }
         }
@@ -241,9 +243,16 @@ Promise.all(promises).then(([net, video]) => {
       people: poseManager.getTexture(),
     });
 
+    const t = new Date().getTime() - startTime;
+    const windOffset = [
+      Math.pow(Math.sin(t / 10000), 10) * (0.25*Math.sin(t / 400) + 0.05*Math.sin(t / 30)),
+      Math.pow(Math.sin(t / 9998), 10) * (0.25*Math.sin(t / 403) + 0.05*Math.sin(t / 37)),
+    ];
+
     flowers({
       particleState: particles.getTexture(),
       people: poseManager.getTexture(),
+      windOffset,
     });
   });
 });

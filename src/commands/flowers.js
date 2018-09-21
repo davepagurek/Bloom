@@ -15,6 +15,7 @@ export function generateFlowers(regl, flower) {
       uniform sampler2D particleState;
       uniform sampler2D people;
       uniform float aspect;
+      uniform vec2 windOffset;
 
       varying float used;
       varying vec2 textureCoord;
@@ -28,9 +29,10 @@ export function generateFlowers(regl, flower) {
       const float PERSON = 5.0;
       const float SEED = 6.0;
       const float SCALE = 7.0;
+      const float ROTATION = 8.0;
 
       float getProperty(float index, float property) {
-        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/8.0)).a;
+        return texture2D(particleState, vec2(index/float(${MAX_PARTICLES}), property/9.0)).a;
       }
 
       ${jitter}
@@ -64,8 +66,20 @@ export function generateFlowers(regl, flower) {
         used = 1.0;
         textureCoord = offset;
         life = getProperty(index, LIFE);
+
+        float angle = getProperty(index, ROTATION) + windOffset.x * 3.14;
+        mat2 rotation = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+
         gl_Position = vec4(
-          getPosition() + (offset *  vec2(1.0, aspect) * -0.16 + 0.08) * getProperty(index, SCALE),
+
+          getPosition() +
+
+            // Offset within the image
+            (offset * -0.16 + 0.08) * rotation * vec2(1.0, aspect) * getProperty(index, SCALE) +
+
+            // Offset from wind
+            windOffset * vec2(1.0, aspect) * 0.1,
+
           0.5,
           1.0
         );
@@ -119,6 +133,7 @@ export function generateFlowers(regl, flower) {
         max: 'linear'
       }),
       aspect: (context) => context.viewportWidth/context.viewportHeight,
+      windOffset: regl.prop('windOffset'),
     },
 
     primitive: 'triangles',
