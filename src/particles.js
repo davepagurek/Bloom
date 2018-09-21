@@ -10,12 +10,13 @@ export class ParticleManager {
     pointB: 3,
     mix: 4,
     person: 5,
-    seed: 6
+    seed: 6,
+    scale: 7,
   };
 
   static textureProps = {
     width: MAX_PARTICLES,
-    height: 7,
+    height: 8,
     channels: 1,
     format: 'alpha',
     type: 'float'
@@ -23,7 +24,7 @@ export class ParticleManager {
 
   freeParticleIndices = range(MAX_PARTICLES).reverse();
   usedParticleIndices = {};
-  state = Float32Array.from(range(MAX_PARTICLES*7).map(() => 0));
+  state = Float32Array.from(range(MAX_PARTICLES*8).map(() => 0));
   dirty = true;
 
   constructor(regl) {

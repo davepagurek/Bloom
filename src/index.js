@@ -185,7 +185,8 @@ Promise.all(promises).then(([net, video]) => {
               person: vineManager.value(index, 'person'),
               mix: life,
               life: 0,
-              seed: vineManager.value(index, 'seed')
+              seed: vineManager.value(index, 'seed'),
+              scale: Math.random() * 1.2 + 0.5,
             });
           }
         }
@@ -205,7 +206,7 @@ Promise.all(promises).then(([net, video]) => {
                 pointB: sample(connections[spawnFrom]),
                 seed: Math.random(),
                 person: vineManager.value(index, 'person'),
-                life: 0
+                life: 0,
               });
             }
           });
