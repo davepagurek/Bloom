@@ -4,11 +4,11 @@ export const jitter = `
     float offset = getProperty(index, SEED);
     float scale = 1.0;
     for (int power = 0; power < 5; power++) {
-      amount += sin((offset + mixAmount) * scale) / scale;
+      amount += sin((offset * 1234.0 + mixAmount) * scale) / scale;
       scale *= 2.0;
     }
 
-    amount *= 0.1;
+    amount *= 0.09;
 
     // ramp down to 0 at 0 and 1
     amount *= -4.0 * mixAmount * (mixAmount - 1.0);
