@@ -51,9 +51,9 @@ export class ParticleManager {
   }
 
   removeParticle(index) {
-    this._setProperty(newIndex, 'used', 0);
+    this._setProperty(index, 'used', 0);
     this.freeParticleIndices.push(index);
-    delete this.usedParticleIndices[newIndex];
+    delete this.usedParticleIndices[index];
   }
 
   update(index, properties) {

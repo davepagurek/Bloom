@@ -44,9 +44,9 @@ export class VineManager {
   }
 
   removeVine(index) {
-    this._setProperty(newIndex, 'used', 0);
+    this._setProperty(index, 'used', 0);
     this.freeVineIndices.push(index);
-    delete this.usedVineIndices[newIndex];
+    delete this.usedVineIndices[index];
   }
 
   update(index, properties) {

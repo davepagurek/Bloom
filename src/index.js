@@ -1,5 +1,24 @@
 import { ParticleManager } from './particles';
-import { PoseManager } from './poses';
+import {
+  PoseManager,
+  NOSE,
+  LEFT_EYE,
+  RIGHT_EYE,
+  LEFT_EAR,
+  RIGHT_EAR,
+  LEFT_SHOULDER,
+  RIGHT_SHOULDER,
+  LEFT_ELBOW,
+  RIGHT_ELBOW,
+  LEFT_WRIST,
+  RIGHT_WRIST,
+  LEFT_HIP,
+  RIGHT_HIP,
+  LEFT_KNEE,
+  RIGHT_KNEE,
+  LEFT_ANKLE,
+  RIGHT_ANKLE,
+} from './poses';
 import { VineManager } from './vines';
 import { generateFlowers } from './commands/flowers';
 import { generateShowVideo } from './commands/video';
@@ -68,24 +87,6 @@ Promise.all(promises).then(([net, video]) => {
   // for debugging:
   // document.querySelector('body').appendChild(video)
 
-  const NOSE = 0;
-  const LEFT_EYE = 1;
-  const RIGHT_EYE = 2;
-  const LEFT_EAR = 3;
-  const RIGHT_EAR = 4;
-  const LEFT_SHOULDER = 5;
-  const RIGHT_SHOULDER = 6;
-  const LEFT_ELBOW = 7;
-  const RIGHT_ELBOW = 8;
-  const LEFT_WRIST = 9;
-  const RIGHT_WRIST = 10;
-  const LEFT_HIP = 11;
-  const RIGHT_HIP = 12;
-  const LEFT_KNEE = 13;
-  const RIGHT_KNEE = 14;
-  const LEFT_ANKLE = 15;
-  const RIGHT_ANKLE = 16;
-
   const connections = {
     [NOSE]: [LEFT_EYE, RIGHT_EYE, LEFT_EAR, RIGHT_EAR, LEFT_SHOULDER, RIGHT_SHOULDER],
     [LEFT_EYE]: [NOSE, RIGHT_EYE, LEFT_EAR, RIGHT_EAR, LEFT_SHOULDER, RIGHT_SHOULDER],
@@ -115,16 +116,6 @@ Promise.all(promises).then(([net, video]) => {
 
   const videoTexture = regl.texture(video);
 
-  const index = vineManager.addVine();
-  const start = sample(range(11));
-  vineManager.update(index, {
-    pointA: start,
-    pointB: sample(connections[start]),
-    seed: Math.random(),
-    person: 0,
-    life: 0
-  });
-
   const imageScaleFactor = 0.25;
   const flipHorizontal = true;
   const outputStride = 16;
@@ -133,7 +124,35 @@ Promise.all(promises).then(([net, video]) => {
   regl.frame(() => {
     net
       .estimateMultiplePoses(video, imageScaleFactor, flipHorizontal, outputStride, 5, 0.1, 30.0)
-      .then(poses => poseManager.update(poses));
+      .then(poses => poseManager.update(poses, (newPeople, removedPeople) => {
+        removedPeople.forEach((i) => {
+          vineManager.eachVine((vine) => {
+            if (vineManager.value(vine, 'person') === i) {
+              vineManager.removeVine(vine);
+            }
+          });
+
+          particles.eachParticle((particle) => {
+            if (particles.value(particle, 'person') === i) {
+              particles.removeParticle(particle);
+            }
+          });
+        });
+
+        // Add spawning vine for each new person
+        newPeople.forEach((i) => {
+          const index = vineManager.addVine();
+          if (index === null) return;
+          const start = sample(range(11));
+          vineManager.update(index, {
+            pointA: start,
+            pointB: sample(connections[start]),
+            seed: Math.random(),
+            person: i,
+            life: 0
+          });
+        });
+      }));
 
     tick = (tick + 1) % 5;
 
