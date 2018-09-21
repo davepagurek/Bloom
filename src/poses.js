@@ -79,8 +79,8 @@ export class PoseManager {
 
       if (prevPerson !== null) {
         prevPerson.keypoints.forEach((point, i) => {
-          point.position.x += (person.keypoints[i].position.x - point.position.x) * 0.5;
-          point.position.y += (person.keypoints[i].position.y - point.position.y) * 0.5;
+          point.position.x += (person.keypoints[i].position.x - point.position.x) * 0.3;
+          point.position.y += (person.keypoints[i].position.y - point.position.y) * 0.3;
         });
         prevPerson.age = 0;
       } else {

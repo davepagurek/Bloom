@@ -56,8 +56,8 @@ export function generateFlowers(regl, flower) {
 
       vec2 getWindOffset(float t) {
         return vec2(
-          pow(sin(t / 10000.0), 20.0) * (0.25*sin(t / 400.0) + 0.05*sin(t / 30.0)),
-          pow(sin(t / 9998.0), 20.0) * (0.25*sin(t / 403.0) + 0.05*sin(t / 37.0))
+          pow(sin(t / 10000.0), 20.0) * (0.15*sin(t / 4000.0) + 0.05*sin(t / 300.0)),
+          pow(sin(t / 9998.0), 20.0) * (0.15*sin(t / 4003.0) + 0.05*sin(t / 370.0))
         );
       }
 

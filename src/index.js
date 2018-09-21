@@ -113,7 +113,7 @@ Promise.all(promises).then(([net, video]) => {
   const vines = generateVines(regl);
   const showVideo = generateShowVideo(regl);
   const particles = new ParticleManager(regl);
-  const poseManager = new PoseManager(regl, 0.25);
+  const poseManager = new PoseManager(regl, 0.45);
   const vineManager = new VineManager(regl);
 
   const videoTexture = regl.texture(video);
